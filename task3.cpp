@@ -26,14 +26,7 @@ float internaldiv(float arg1, float arg2) {
 // Версія 2: функція div сама перевіряє дільник
 // і кидає виняток перед тим, як намагатися ділити.
 float div(float arg1, float arg2) {
-    if (arg2 == 0.0f) {
-        // Кидаємо власний виняток (або той самий код помилки)
-        // Можна було б кинути std::invalid_argument("Дільник не може бути нулем");
-        throw DivideByZeroErrorCode;
-    }
-    // Якщо дільник не нуль, виконуємо ділення
-    // Можна викликати internaldiv_for_v2 або просто arg1 / arg2
-    return arg1 / arg2; // Або return internaldiv_for_v2(arg1, arg2);
+    return internaldiv_for_v2(arg1, arg2);
 }
 
 int main() {
