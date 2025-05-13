@@ -11,7 +11,7 @@ const int DivideByZeroErrorCode = 111; // Можна також використ
 // У цьому прикладі, якщо div_v2 робить перевірку,
 // то internaldiv не обов'язково має повторювати її,
 // але для узгодження з завданням, де internaldiv кидає виняток, залишимо її.
-float internaldiv_for_v2(float arg1, float arg2) {
+float internaldiv(float arg1, float arg2) {
     // В цьому сценарії, якщо div_v2 вже перевірила на нуль,
     // ця перевірка в internaldiv_for_v2 може здатися надлишковою.
     // Однак, це робить internaldiv_for_v2 безпечною для самостійного використання.
@@ -25,7 +25,7 @@ float internaldiv_for_v2(float arg1, float arg2) {
 
 // Версія 2: функція div сама перевіряє дільник
 // і кидає виняток перед тим, як намагатися ділити.
-float div_v2(float arg1, float arg2) {
+float div(float arg1, float arg2) {
     if (arg2 == 0.0f) {
         // Кидаємо власний виняток (або той самий код помилки)
         // Можна було б кинути std::invalid_argument("Дільник не може бути нулем");
