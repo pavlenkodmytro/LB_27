@@ -36,7 +36,7 @@ int main() {
 
     while (cin >> a >> b) {
         try {
-            r = div_v2(a, b);
+            r = div(a, b);
             cout << "Результат: " << r << endl;
         } catch (int errorCode) { // Ловимо той самий тип винятку
             if (errorCode == DivideByZeroErrorCode) {
