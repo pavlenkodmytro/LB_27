@@ -1,67 +1,66 @@
-#include <iostream>   // Підключення бібліотеки для введення/виведення (cout, cin, cerr)
-#include <stdexcept>  // Підключення для стандартних винятків (якщо б ми хотіли їх використовувати замість int)
+#include <iostream>
+#include <string>
+#include <stdexcept> // Для std::invalid_argument, якщо б ми хотіли кидати більш конкретний тип
 
-// Використання стандартного простору імен
 using namespace std;
 
-// Константа, що представляє код помилки ділення на нуль [cite: 20]
-const int DivideByZero = 111;
+const int DivideByZeroErrorCode = 111; // Можна також використовувати std::string або власний клас
 
-// Функція, яка виконує ділення і генерує виняток, якщо дільник нуль [cite: 21]
-float internaldiv(float arg1, float arg2) {
-    if (arg2 == 0.0f) { // Перевірка, чи другий аргумент (дільник) дорівнює 0.0 [cite: 21]
-        throw DivideByZero; // Якщо дільник нуль, генеруємо виняток з кодом DivideByZero [cite: 21]
+// Функція internaldiv може бути спрощена, якщо div робить перевірку,
+// або залишена для інших потенційних викликів.
+// У цьому прикладі, якщо div_v2 робить перевірку,
+// то internaldiv не обов'язково має повторювати її,
+// але для узгодження з завданням, де internaldiv кидає виняток, залишимо її.
+float internaldiv_for_v2(float arg1, float arg2) {
+    // В цьому сценарії, якщо div_v2 вже перевірила на нуль,
+    // ця перевірка в internaldiv_for_v2 може здатися надлишковою.
+    // Однак, це робить internaldiv_for_v2 безпечною для самостійного використання.
+    if (arg2 == 0.0f) {
+        // Теоретично, сюди не маємо потрапити, якщо div_v2 працює правильно
+        throw DivideByZeroErrorCode;
     }
-    return arg1 / arg2; // Повертаємо результат ділення [cite: 21]
+    return arg1 / arg2;
 }
 
-// Модифікована функція div, яка тепер повертає результат ділення (float)
-// і використовує internaldiv, яка може згенерувати виняток.
-// Ця версія відповідає "one that catches the division by zero exception" [cite: 19]
-// в тому сенсі, що виняток генерується внутрішньою функцією.
-float div_v1(float arg1, float arg2) {
-    // Просто викликаємо internaldiv, яка обробляє перевірку на нуль і генерує виняток
-    return internaldiv(arg1, arg2); // Повертаємо результат з internaldiv
+
+// Версія 2: функція div сама перевіряє дільник
+// і кидає виняток перед тим, як намагатися ділити.
+float div_v2(float arg1, float arg2) {
+    if (arg2 == 0.0f) {
+        // Кидаємо власний виняток (або той самий код помилки)
+        // Можна було б кинути std::invalid_argument("Дільник не може бути нулем");
+        throw DivideByZeroErrorCode;
+    }
+    // Якщо дільник не нуль, виконуємо ділення
+    // Можна викликати internaldiv_for_v2 або просто arg1 / arg2
+    return arg1 / arg2; // Або return internaldiv_for_v2(arg1, arg2);
 }
 
-// Головна функція програми [cite: 23]
-int main(void) {
-    float r;     // Змінна для зберігання результату ділення
-    float a, b;  // Змінні для зберігання введених користувачем чисел (ділене та дільник)
+int main() {
+    float r, a, b;
 
-    cout << "--- Version 1 (using internaldiv's throw) ---" << endl;
-    cout << "Enter two numbers (a and b for a/b). Enter non-numeric input to quit." << endl;
+    cout << "Введіть два числа для ділення (або нечисловий ввід для виходу):" << endl;
 
-    // Цикл продовжується, доки користувач вводить коректні числа [cite: 23]
-    while (cin >> a) { // Зчитуємо перше число (ділене)
-        if (!(cin >> b)) { // Намагаємося зчитати друге число (дільник)
-            cout << "Invalid input for b. Exiting." << endl; // Якщо введення для 'b' невдале
-            break; // Виходимо з циклу
-        }
-
-        try { // Початок блоку try для відстеження винятків з функції div_v1 [cite: 17]
-            r = div_v1(a, b); // Викликаємо функцію div_v1, яка може згенерувати виняток
-            cout << "Result (v1): " << r << endl; // Виводимо результат, якщо винятку не було [cite: 23]
-        }
-        catch (int errorCode) { // Перехоплюємо виняток типу int (наш DivideByZero) [cite: 17]
-            if (errorCode == DivideByZero) { // Перевіряємо, чи це саме наш код помилки
-                // Виводимо повідомлення згідно зі сценарієм [cite: 18, 27]
-                cerr << "Error (v1): Your input is not valid. You can't divide by zero." << endl;
+    while (cin >> a >> b) {
+        try {
+            r = div_v2(a, b);
+            cout << "Результат: " << r << endl;
+        } catch (int errorCode) { // Ловимо той самий тип винятку
+            if (errorCode == DivideByZeroErrorCode) {
+                cout << "Помилка: Спроба ділення на нуль! Введіть інший дільник." << endl;
             } else {
-                // Обробка інших можливих цілочисельних винятків (якщо такі є)
-                cerr << "Error (v1): An unexpected integer exception occurred: " << errorCode << endl;
+                cout << "Невідома помилка з кодом: " << errorCode << endl;
             }
         }
-        cout << "Enter next pair of numbers (or non-numeric to quit):" << endl;
+        // Як альтернатива, якщо б ми кидали std::exception або його нащадків:
+        /*
+        catch (const std::exception& e) {
+            cout << "Стандартний виняток: " << e.what() << endl;
+        }
+        */
+        cout << "\nВведіть наступну пару чисел (або нечисловий ввід для виходу):" << endl;
     }
-    cin.clear(); // Очищуємо прапорці помилок потоку cin
-    // Поглинаємо залишки невірного вводу з буфера, щоб наступні операції вводу (якщо є) працювали коректно
-    string dummy;
-    getline(cin, dummy);
 
-
-    // --- Версія 2 ---
-    // Код для Версії 2 буде представлений нижче
-
-    return 0; // Успішне завершення програми [cite: 24]
+    cout << "Завершення програми." << endl;
+    return 0;
 }
